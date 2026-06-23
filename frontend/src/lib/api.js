@@ -13,6 +13,8 @@ export const getStats = () => api.get('/stats').then((r) => r.data)
 
 export const getDiseases = () => api.get('/diseases').then((r) => r.data)
 
+export const getDrugs = () => api.get('/drugs').then((r) => r.data)
+
 export const rankDrugs = (disease_name, top_k) =>
   api.post('/rank', { disease_name, top_k }).then((r) => r.data)
 

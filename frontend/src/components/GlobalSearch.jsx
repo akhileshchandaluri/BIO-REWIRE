@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
   Search,
@@ -9,7 +9,7 @@ import {
   AlertTriangle,
   X,
 } from 'lucide-react'
-import { inferDrug } from '../lib/api'
+import { inferDrug, getDrugs } from '../lib/api'
 import { labelFor } from '../lib/utils'
 
 // Feature 3 — On-the-Fly Drug Inference.
@@ -21,6 +21,16 @@ export default function GlobalSearch({ activeDisease }) {
   const [result, setResult] = useState(null)
   const [errorMsg, setErrorMsg] = useState('')
   const [pending, setPending] = useState('') // drug name being computed
+  const [drugList, setDrugList] = useState([])
+  const [showSuggestions, setShowSuggestions] = useState(false)
+
+  useEffect(() => {
+    getDrugs()
+      .then((res) => {
+        if (res && res.drugs) setDrugList(res.drugs)
+      })
+      .catch(console.error)
+  }, [])
 
   const run = async (e) => {
     e?.preventDefault()
@@ -67,10 +77,46 @@ export default function GlobalSearch({ activeDisease }) {
           <input
             type="text"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => {
+              setQuery(e.target.value)
+              setShowSuggestions(true)
+            }}
+            onFocus={() => setShowSuggestions(true)}
+            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
             placeholder="Search any drug (e.g. Aspirin, Lisinopril, Afatinib)…"
             className="w-full rounded-xl border border-slate-200 bg-slate-50/70 py-2.5 pl-9 pr-3 text-sm text-slate-800 outline-none transition-colors placeholder:text-slate-400 focus:border-indigo-300 focus:bg-white focus:ring-2 focus:ring-indigo-100"
           />
+          {showSuggestions && query.trim() && (() => {
+            const matches = drugList.filter((d) =>
+              d.toLowerCase().includes(query.toLowerCase())
+            )
+            // Hide if no matches or if the only match is already exactly what's typed
+            if (
+              matches.length === 0 ||
+              (matches.length === 1 && matches[0].toLowerCase() === query.trim().toLowerCase())
+            ) {
+              return null
+            }
+            return (
+              <div className="absolute top-full left-0 z-50 mt-1 w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
+                <ul className="max-h-48 overflow-y-auto py-1">
+                  {matches.map((d) => (
+                    <li
+                      key={d}
+                      onMouseDown={(e) => {
+                        e.preventDefault() // prevent input blur
+                        setQuery(d)
+                        setShowSuggestions(false)
+                      }}
+                      className="cursor-pointer px-4 py-2 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"
+                    >
+                      {d}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )
+          })()}
         </div>
         <motion.button
           whileTap={{ scale: 0.97 }}

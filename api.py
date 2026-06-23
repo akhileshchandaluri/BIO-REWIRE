@@ -311,6 +311,11 @@ def diseases():
     return {"diseases": tg.DISEASE_NAMES}
 
 
+@app.get("/drugs")
+def drugs():
+    return {"drugs": CTX["drug_names"]}
+
+
 @app.post("/rank")
 def rank(req: RankRequest):
     if req.disease_name not in tg.DISEASE_NAMES:
