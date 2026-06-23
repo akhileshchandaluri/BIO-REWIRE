@@ -9,9 +9,6 @@ import {
   FlaskConical,
   AlertTriangle,
   Sparkles,
-  Waypoints,
-  Beaker,
-  ShieldCheck,
 } from 'lucide-react'
 
 import Sidebar from './components/Sidebar'
@@ -20,10 +17,6 @@ import ControlPanel from './components/ControlPanel'
 import RankedTable from './components/RankedTable'
 import NetworkGraph from './components/NetworkGraph'
 import DrugChemicalProfile from './components/DrugChemicalProfile'
-import EdgeAttenuationTable from './components/EdgeAttenuationTable'
-import ChemicalSimilarity from './components/ChemicalSimilarity'
-import ClinicalVerification from './components/ClinicalVerification'
-import GlobalSearch from './components/GlobalSearch'
 import { getStats, rankDrugs, getDrugGraph } from './lib/api'
 import { cn, labelFor } from './lib/utils'
 
@@ -32,9 +25,6 @@ const fmt = (n) => (n == null ? '—' : n.toLocaleString('en-US'))
 const TABS = [
   { id: 'ranked', label: 'Ranked Candidates', icon: ListOrdered },
   { id: 'network', label: 'Network Topology', icon: Network },
-  { id: 'attenuation', label: 'Edge Attenuation', icon: Waypoints },
-  { id: 'chemistry', label: 'Chemical Profile', icon: Beaker },
-  { id: 'clinical', label: 'Clinical Verification', icon: ShieldCheck },
 ]
 
 export default function App() {
@@ -152,7 +142,7 @@ export default function App() {
           )}
 
           {/* Control panel */}
-          <div className="mb-5">
+          <div className="mb-7">
             <ControlPanel
               activeDisease={activeDisease}
               topK={topK}
@@ -160,11 +150,6 @@ export default function App() {
               onRun={handleRun}
               loading={rankLoading}
             />
-          </div>
-
-          {/* Global drug search — on-the-fly live inference (Feature 3) */}
-          <div className="mb-7">
-            <GlobalSearch activeDisease={activeDisease} />
           </div>
 
           {/* Tabs */}
@@ -197,7 +182,7 @@ export default function App() {
 
           {/* Tab content */}
           <AnimatePresence mode="wait">
-            {activeTab === 'ranked' && (
+            {activeTab === 'ranked' ? (
               <motion.div
                 key="ranked"
                 initial={{ opacity: 0, y: 10 }}
@@ -256,9 +241,7 @@ export default function App() {
                   />
                 )}
               </motion.div>
-            )}
-
-            {activeTab === 'network' && (
+            ) : (
               <motion.div
                 key="network"
                 initial={{ opacity: 0, y: 10 }}
@@ -271,45 +254,6 @@ export default function App() {
                   data={graphData}
                   loading={graphLoading}
                 />
-              </motion.div>
-            )}
-
-            {activeTab === 'attenuation' && (
-              <motion.div
-                key="attenuation"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.25 }}
-              >
-                <EdgeAttenuationTable drug={selectedDrug} />
-              </motion.div>
-            )}
-
-            {activeTab === 'chemistry' && (
-              <motion.div
-                key="chemistry"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.25 }}
-              >
-                <ChemicalSimilarity
-                  drug={selectedDrug}
-                  onSelectDrug={handleSelectDrug}
-                />
-              </motion.div>
-            )}
-
-            {activeTab === 'clinical' && (
-              <motion.div
-                key="clinical"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.25 }}
-              >
-                <ClinicalVerification disease={activeDisease} />
               </motion.div>
             )}
           </AnimatePresence>
